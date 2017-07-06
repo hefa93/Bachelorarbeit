@@ -11,8 +11,10 @@ public:
 	Process();
 	~Process();
 
-	void processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat& mat3);
+	void processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat& mat3, cv::Mat& Descriptor1, cv::Mat& Descriptor2, cv::Mat& img_matches, float height, float xMitte, float yMitte);
 
-	void processNextImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat& mat3);
+	
 
+	void SiftAlgorithm(cv::Mat& mat, cv::Mat& mat1);
+	void SurfAlgorithm(cv::Mat& mat, cv::Mat& mat1);
 };

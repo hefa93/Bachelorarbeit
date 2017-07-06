@@ -1,7 +1,6 @@
 #include <Windows.h>
 #include <iostream>
 #include <Sensor.h>
-#include <Sift.h>
 #include <util.h>
 #include <Process.h>
 #include <opencv2\core\core.hpp>
@@ -12,15 +11,15 @@
 
 
 using namespace std;
+
 using namespace cv;
 
-#define width 640
-#define height 480
+
 
 int main() {
 	Sensor sensor;
 	Process process;
-	Sift sift;
+	
 	try {
 		sensor.initialize();
 		//sensor.setCameraAngle(10);
@@ -41,7 +40,15 @@ int main() {
 	Mat matHELP = Mat::zeros(480, 640, CV_8UC1);
 	Mat matIMG1;
 	Mat matIMG2;
+	Mat Descriptor1;
+	Mat Descriptor2;
+	Mat img_matches;
+	float xMitte;
+	float yMitte;
+	
 	Mat matMATCHES = Mat::zeros(480, 640, CV_8UC1);
+	int i = 0;
+	float height = 0;
 
 	while (true) {
 		sensor.updateTextureRGB();
@@ -60,8 +67,8 @@ int main() {
 		
 		
 
-		matIMG1 = imread("ziel2.jpg", IMREAD_GRAYSCALE);
-		matIMG2 = imread("start3.jpg", IMREAD_GRAYSCALE);
+		matIMG1 = imread("StartGroß_640x480.jpg", IMREAD_GRAYSCALE);
+		matIMG2 = imread("StartKlein_640x480.jpg", IMREAD_GRAYSCALE);
 
 		if (matIMG2.empty())                      
 		{
@@ -71,24 +78,27 @@ int main() {
 
 
 		
-		convertNuiToMatDEPTH(lockedRectDEPTH, matDEPTH);
+		/*convertNuiToMatDEPTH(lockedRectDEPTH, matDEPTH);*/
+		
+		//process.SiftAlgorithm(matIMG1, matIMG2);
 				
-	/*	while (TRUE) {*/
+		/*process.SurfAlgorithm(matIMG1, matIMG2);*/
+
+	/*	process.processImage(matRGB, matHELP, matIMG2, matMATCHES, Descriptor1, Descriptor2, img_matches, height, xMitte, yMitte);*/
+
 		
 
-			//process.processImage(matRGB, matHELP, matIMG1, matMATCHES);
-			
-			
+		
 
-			/*imshow("RGB", matRGB);
-			cvMoveWindow("RGB", 1500, 0);*/
+			imshow("RGB", matRGB);
+			cvMoveWindow("RGB", 1500, 0);
 
 	/*		if (waitKey(25) == 'f') {
 				break;
 			}
 		}*/
-		imshow("DEPTH", matDEPTH);
-		cvMoveWindow("DEPTH", 2150, 0);
+		imshow("depth", matDEPTH);
+		//cvmovewindow("depth", 2150, 0);
 		textureRGB->UnlockRect(0);
 		sensor.releaseFrameRGB(); 
 

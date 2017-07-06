@@ -20,6 +20,7 @@ void convertNuiToMatRGB(NUI_LOCKED_RECT& lockedRect, cv::Mat3b& mat) {
 				pointerToTheByteBeingRead += 2; // Skip the alpha channel
 				pointerToRow[j] = cv::Vec3b(r, g, b);
 			}
+
 		}
 		flip(mat, mat, 1);
 	}
@@ -39,7 +40,7 @@ void convertNuiToMatDEPTH(NUI_LOCKED_RECT& lockedRect, cv::Mat4b& mat) {
 
 			for (int j = 0; j < 640; j++)
 			{
-				depth = NuiDepthPixelToDepth(*pointerToTheByteBeingRead++);
+				depth = NuiDepthPixelToDepth(*pointerToTheByteBeingRead);
 
 				unsigned char r = (depth*x)%256;
 				
@@ -49,7 +50,7 @@ void convertNuiToMatDEPTH(NUI_LOCKED_RECT& lockedRect, cv::Mat4b& mat) {
 				
 				unsigned char alpha = 0xFF ;
 
-				//pointerToTheByteBeingRead+=2;
+				pointerToTheByteBeingRead+=1;
 				
 				pointerToRow[j] = cv::Vec4b(r, g, b, alpha);
 
