@@ -12,6 +12,7 @@
 #include <opencv2\core\mat.hpp>
 
 
+
 using namespace cv::xfeatures2d;
 
 Process::Process() {
@@ -20,9 +21,22 @@ Process::Process() {
 Process::~Process() { 
 };
 
-void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat& mat3, cv::Mat& Descriptor1, cv::Mat& Descriptor2, cv::Mat& img_matches, float height, float xMitte, float yMitte) {
+void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat& mat3, cv::Mat& Descriptor1, cv::Mat& Descriptor2, cv::Mat& img_matches, float* height, float* xMitte, float* yMitte, cv::Mat& matHelp2, cv::Mat4b& matDEPTH, int* xCheck, int* yCheck) {
+
 
 	cv::cvtColor(mat,mat1, CV_RGB2GRAY);
+	int i = 0;
+	int j = 0;
+	for (i = 100; i < 380; i++) {
+
+
+		for (j = 100; j < 540; j++) {
+			matHelp2.at<char>(i - 100, j - 100) = mat1.at<char>(i, j);
+		}
+
+	}
+
+	
 	
 	
 	/*************Konturenerkennung mit farblicher Kennzeichnung************
@@ -61,7 +75,7 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 
 	 detector->detectAndCompute(mat2, cv::Mat(), keypoints2, Descriptor2);
 
-	 detector->detectAndCompute(mat1, cv::Mat(), keypoints1, Descriptor1);
+	 detector->detectAndCompute(matHelp2, cv::Mat(), keypoints1, Descriptor1);
 	 
 	 cv::FlannBasedMatcher matcher;
 	 std::vector< cv::DMatch > matches;
@@ -88,7 +102,7 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	 }
 
 	 
-	 drawMatches(mat1, keypoints1, mat2, keypoints2,
+	 drawMatches(matHelp2, keypoints1, mat2, keypoints2,
 		 good_matches, img_matches, 0, 0,
 		 std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
@@ -110,18 +124,17 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	
 	 //-- Get the corners from the image_1 ( the object to be "detected" )
 	 std::vector<cv::Point2f> obj_corners(4);
-	 obj_corners[0] = cvPoint(0, 0); obj_corners[1] = cvPoint(mat1.cols, 0);
-	 obj_corners[2] = cvPoint(mat1.cols, mat1.rows); obj_corners[3] = cvPoint(0, mat1.rows);
+	 obj_corners[0] = cvPoint(0, 0); obj_corners[1] = cvPoint(matHelp2.cols, 0);
+	 obj_corners[2] = cvPoint(matHelp2.cols, matHelp2.rows); obj_corners[3] = cvPoint(0, matHelp2.rows);
 	 std::vector<cv::Point2f> scene_corners(4);
 
 
 
-	 if (H.rows == 3 || H.cols == 3) {
-	 perspectiveTransform(obj_corners, scene_corners,  H);
-
-	 std::cout << "Dimension von H korrekt";
+	 if (H.rows != 3 || H.cols != 3) {
+		 return;
 	 }
 	 
+	 perspectiveTransform(obj_corners, scene_corners, H);
 
 	 //-- Draw lines between the corners (the mapped object in the scene - image_2 )
 	 line(img_matches, scene_corners[0] , scene_corners[1] , cv::Scalar(0, 255, 0), 4);
@@ -129,12 +142,26 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	 line(img_matches, scene_corners[2] , scene_corners[3] , cv::Scalar(0, 255, 0), 4);
 	 line(img_matches, scene_corners[3] , scene_corners[0] , cv::Scalar(0, 255, 0), 4);
 
-	 height = scene_corners[0].y - scene_corners[3].y;
-	 xMitte = scene_corners[0].x + scene_corners[1].x - scene_corners[0].x;
-	 yMitte = scene_corners[0].y + scene_corners[3].y - scene_corners[0].y;
+	 
 
 	
 
+
+	 *height = scene_corners[3].y - scene_corners[0].y;
+	 *xMitte = scene_corners[0].x + (scene_corners[1].x - scene_corners[0].x)/2;
+	 *yMitte = scene_corners[0].y +(scene_corners[3].y - scene_corners[0].y)/2;
+
+	 int scene_corners1x = static_cast<int>(scene_corners[0].x);
+	 int scene_corners2x = static_cast<int>(scene_corners[1].x);
+	 int scene_corners3x = static_cast<int>(scene_corners[2].x);
+	 int scene_corners4x = static_cast<int>(scene_corners[3].x);
+	 int scene_corners1y = static_cast<int>(scene_corners[0].y);
+	 int scene_corners2y = static_cast<int>(scene_corners[1].y);
+	 int scene_corners3y = static_cast<int>(scene_corners[2].y);
+	 int scene_corners4y = static_cast<int>(scene_corners[3].y);
+	
+	 *xCheck = scene_corners2x - scene_corners1x - scene_corners3x + scene_corners4x;
+	 *yCheck = scene_corners4y - scene_corners1y - scene_corners3y + scene_corners2y;
 
 	 //-- Show detected matches
 	 imshow("Good Matches & Object detection", img_matches);

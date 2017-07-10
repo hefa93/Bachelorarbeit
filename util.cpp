@@ -54,12 +54,7 @@ void convertNuiToMatDEPTH(NUI_LOCKED_RECT& lockedRect, cv::Mat4b& mat) {
 				
 				pointerToRow[j] = cv::Vec4b(r, g, b, alpha);
 
-				if (i == 250 & j == 300) {
-
-					std::cout << depth*x;
-					std::cout << "depth\n";
-
-				}
+			
 			}
 		
 			
@@ -69,7 +64,43 @@ void convertNuiToMatDEPTH(NUI_LOCKED_RECT& lockedRect, cv::Mat4b& mat) {
 	}
 }
 
+void getDepthValue(NUI_LOCKED_RECT& lockedRect, float* xMitte, float* yMitte, USHORT* depthValue) {
 
+	int xMitte1 = static_cast<int>(*xMitte);
+	int yMitte1 = static_cast<int>(*yMitte);
+
+	if (lockedRect.Pitch != 0)
+	{
+		const USHORT* upperLeftCorner = (USHORT*)lockedRect.pBits;
+		const USHORT* pointerToTheByteBeingRead = upperLeftCorner;
+		
+		USHORT depth;
+
+		for (int i = 0; i < 480; i++)
+		{
+			
+			for (int j = 0; j < 640; j++)
+			{
+				depth = NuiDepthPixelToDepth(*pointerToTheByteBeingRead);
+
+
+				pointerToTheByteBeingRead += 1;
+
+
+				if (i == yMitte1 + 100 && j == xMitte1 + 100) {
+
+					*depthValue = depth;
+					return;
+				}
+
+			}
+
+
+
+		}
+		
+	}
+}
 
 
 

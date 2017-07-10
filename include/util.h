@@ -8,3 +8,4 @@
 
 void convertNuiToMatRGB(NUI_LOCKED_RECT& lockedRect, cv::Mat3b& mat);
 void convertNuiToMatDEPTH(NUI_LOCKED_RECT& lockedRect, cv::Mat4b& mat);
+void getDepthValue(NUI_LOCKED_RECT& lockedRect, float* xMitte, float* yMitte, USHORT* depthValue);

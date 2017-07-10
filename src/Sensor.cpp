@@ -82,5 +82,4 @@ void Sensor::releaseFrameDEPTH() {
 
 void Sensor::setCameraAngle(LONG Angle) {
 	NuiCameraElevationSetAngle(Angle);
-}
-
+};
