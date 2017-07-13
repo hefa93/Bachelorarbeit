@@ -71,14 +71,14 @@ void getDepthValue(NUI_LOCKED_RECT& lockedRect, float* xMitte, float* yMitte, US
 
 	if (lockedRect.Pitch != 0)
 	{
-		const USHORT* upperLeftCorner = (USHORT*)lockedRect.pBits;
-		const USHORT* pointerToTheByteBeingRead = upperLeftCorner;
-		
+		USHORT* upperLeftCorner = (USHORT*)lockedRect.pBits;
+		USHORT* pointerToTheByteBeingRead = upperLeftCorner;
+
 		USHORT depth;
 
 		for (int i = 0; i < 480; i++)
 		{
-			
+
 			for (int j = 0; j < 640; j++)
 			{
 				depth = NuiDepthPixelToDepth(*pointerToTheByteBeingRead);
@@ -87,22 +87,22 @@ void getDepthValue(NUI_LOCKED_RECT& lockedRect, float* xMitte, float* yMitte, US
 				pointerToTheByteBeingRead += 1;
 
 
-				if (i == yMitte1 + 100 && j == xMitte1 + 100) {
+				if (i == (yMitte1 + 100) && j == (xMitte1 + 100)) {
 
 					*depthValue = depth;
 					return;
 				}
 
+
+
+
+
 			}
 
-
-
 		}
-		
 	}
+
 }
-
-
 
 
 

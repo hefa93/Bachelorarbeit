@@ -1,4 +1,4 @@
-#include <Process.h>
+
 #include <stdio.h>
 #include <opencv2\flann.hpp>
 #include <opencv2\calib3d.hpp>
@@ -6,10 +6,14 @@
 #include <opencv2\imgcodecs.hpp>
 #include <opencv2\xfeatures2d.hpp>
 #include <opencv2\features2d.hpp>
-#include <iostream>
 #include <opencv2\core\core.hpp>
 #include <opencv2\highgui\highgui.hpp>
 #include <opencv2\core\mat.hpp>
+#include <iostream>
+
+#include <Sensor.h>
+#include <util.h>
+#include <Process.h>
 
 
 
@@ -21,7 +25,7 @@ Process::Process() {
 Process::~Process() { 
 };
 
-void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat& mat3, cv::Mat& Descriptor1, cv::Mat& Descriptor2, cv::Mat& img_matches, float* height, float* xMitte, float* yMitte, cv::Mat& matHelp2, cv::Mat4b& matDEPTH, int* xCheck, int* yCheck) {
+void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat& mat3, cv::Mat& Descriptor1, cv::Mat& Descriptor2, cv::Mat& img_matches, float* height, float* xMitte, float* yMitte, cv::Mat& matHelp2, cv::Mat4b& matDEPTH, int* xCheck, int* yCheck, float* gamma) {
 
 
 	cv::cvtColor(mat,mat1, CV_RGB2GRAY);
@@ -95,7 +99,7 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 
 	 for (int i = 0; i < Descriptor1.rows; i++)
 	 {
-		 if (matches[i].distance <= std::max(2 * min_dist, 0.02))
+		 if (matches[i].distance <= max(2 * min_dist, 0.02))
 		 {
 			 good_matches.push_back(matches[i]);
 		 }
@@ -124,8 +128,8 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	
 	 //-- Get the corners from the image_1 ( the object to be "detected" )
 	 std::vector<cv::Point2f> obj_corners(4);
-	 obj_corners[0] = cvPoint(0, 0); obj_corners[1] = cvPoint(matHelp2.cols, 0);
-	 obj_corners[2] = cvPoint(matHelp2.cols, matHelp2.rows); obj_corners[3] = cvPoint(0, matHelp2.rows);
+	 obj_corners[0] = cvPoint(0, 0); obj_corners[1] = cvPoint(mat2.cols, 0);
+	 obj_corners[2] = cvPoint(mat2.cols, mat2.rows); obj_corners[3] = cvPoint(0, mat2.rows);
 	 std::vector<cv::Point2f> scene_corners(4);
 
 
@@ -142,6 +146,8 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	 line(img_matches, scene_corners[2] , scene_corners[3] , cv::Scalar(0, 255, 0), 4);
 	 line(img_matches, scene_corners[3] , scene_corners[0] , cv::Scalar(0, 255, 0), 4);
 
+	
+
 	 
 
 	
@@ -150,6 +156,10 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	 *height = scene_corners[3].y - scene_corners[0].y;
 	 *xMitte = scene_corners[0].x + (scene_corners[1].x - scene_corners[0].x)/2;
 	 *yMitte = scene_corners[0].y +(scene_corners[3].y - scene_corners[0].y)/2;
+
+	 line(img_matches, cv::Point2f(*xMitte, *yMitte), cv :: Point2f(*xMitte + 2, *yMitte + 2), cv::Scalar(255, 0, 0), 4);
+
+
 
 	 int scene_corners1x = static_cast<int>(scene_corners[0].x);
 	 int scene_corners2x = static_cast<int>(scene_corners[1].x);
@@ -162,13 +172,24 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	
 	 *xCheck = scene_corners2x - scene_corners1x - scene_corners3x + scene_corners4x;
 	 *yCheck = scene_corners4y - scene_corners1y - scene_corners3y + scene_corners2y;
+	 
+	 float a = scene_corners2x - scene_corners1x;
+	 float b = scene_corners4y - scene_corners1y;
+	 float cQuadrat = (scene_corners2x - scene_corners4x)*(scene_corners2x - scene_corners4x) + (scene_corners4y - scene_corners2y)*(scene_corners4y - scene_corners2y);
+
+	 float ergb = (a * a + b * b - cQuadrat) / (2 * a * b);
+	 *gamma = std::acos(ergb);
+
+	 float Pi = 3.14159265359;
+
+	 *gamma = (*gamma / (2 * Pi)) * 360;
 
 	 //-- Show detected matches
 	 imshow("Good Matches & Object detection", img_matches);
 
 	
 
-}
+};
 	
 
 
@@ -250,7 +271,7 @@ void Process::SiftAlgorithm (cv::Mat& img_1, cv::Mat& img_2){
 
 	for (int i = 0; i < descriptors_1.rows; i++)
 	{
-		if (matches[i].distance <= std::max(2 * min_dist, 0.02))
+		if (matches[i].distance <= max(2 * min_dist, 0.02))
 		{
 			good_matches.push_back(matches[i]);
 		}
@@ -302,7 +323,7 @@ void Process::SiftAlgorithm (cv::Mat& img_1, cv::Mat& img_2){
 	//-- Show detected matches
 	imshow("Good Matches & Object detection", img_matches);
 	
-}
+};
 
 void Process::SurfAlgorithm(cv::Mat& mat1, cv::Mat& mat2) {
 	
@@ -347,7 +368,7 @@ void Process::SurfAlgorithm(cv::Mat& mat1, cv::Mat& mat2) {
 
 	for (int i = 0; i < Descriptor1.rows; i++)
 	{
-		if (matches[i].distance <= std::max(2 * min_dist, 0.02))
+		if (matches[i].distance <= max(2 * min_dist, 0.02))
 		{
 			good_matches.push_back(matches[i]);
 		}
@@ -398,4 +419,49 @@ void Process::SurfAlgorithm(cv::Mat& mat1, cv::Mat& mat2) {
 	//-- Show detected matches
 	imshow("Good Matches & Object detection", img_matches);
 
-}
+};
+
+
+
+
+void Process::getDepthandSize(cv::Mat3b& matRGB, cv::Mat& matHELP, cv::Mat& matIMG2, cv::Mat& matMATCHES, cv::Mat& Descriptor1, cv::Mat& Descriptor2, cv::Mat& img_matches, float* height, float* xMitte, float* yMitte, cv::Mat& matHelp2, cv::Mat4b& matDEPTH, int* xCheck, int* yCheck, NUI_LOCKED_RECT& lockedRectDEPTH, NUI_LOCKED_RECT& lockedRectRGB, USHORT* depthValue, INuiFrameTexture* textureRGB, INuiFrameTexture* textureDEPTH, Sensor& sensor, Process& process, float* gamma) {
+	
+	while (*xCheck > 20 || *yCheck > 20 || *xCheck < -20 || *yCheck < -20 || *gamma >100 || *gamma <80) {
+
+		sensor.updateTextureRGB();
+		textureRGB = sensor.getTextureRGB();
+		lockedRectRGB = sensor.getLockedRectRGB();
+		textureRGB->LockRect(0, &lockedRectRGB, NULL, 0);
+
+		sensor.updateTextureDEPTH();
+		textureDEPTH = sensor.getTextureDEPTH();
+		lockedRectDEPTH = sensor.getLockedRectDEPTH();
+		textureDEPTH->LockRect(0, &lockedRectDEPTH, NULL, 0);
+
+		convertNuiToMatRGB(lockedRectRGB, matRGB);
+		convertNuiToMatDEPTH(lockedRectDEPTH, matDEPTH);
+
+
+		
+		process.processImage(matRGB, matHELP, matIMG2, matMATCHES, Descriptor1, Descriptor2, img_matches, height, xMitte, yMitte, matHelp2, matDEPTH, xCheck, yCheck, gamma);
+
+		getDepthValue(lockedRectDEPTH, xMitte, yMitte, depthValue);
+		if (cv::waitKey(25) == 'q') {
+			break;
+		
+			
+
+		}
+		line(matDEPTH, cv::Point2f(*xMitte , *yMitte), cv::Point2f(*xMitte, *yMitte), cv::Scalar(255, 0, 0), 4);
+		cv::imshow("Depth", matDEPTH);
+	
+
+		
+
+		textureRGB->UnlockRect(0);
+		sensor.releaseFrameRGB();
+		textureDEPTH->UnlockRect(0);
+		sensor.releaseFrameDEPTH();
+	}
+
+	};

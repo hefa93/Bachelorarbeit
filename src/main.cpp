@@ -29,8 +29,8 @@ int main() {
 		return 0;
 	}
 	
-	INuiFrameTexture* textureRGB;
-	INuiFrameTexture* textureDEPTH;
+	INuiFrameTexture* textureRGB = 0;
+	INuiFrameTexture* textureDEPTH = 0;
 	NUI_LOCKED_RECT lockedRectRGB;
 	NUI_LOCKED_RECT lockedRectDEPTH;
 
@@ -42,122 +42,47 @@ int main() {
 	Mat matHelp2 = Mat::zeros(280, 440, CV_8UC1);
 	Mat matIMG1;
 	Mat matIMG2;
+	Mat matIMG3;
 	Mat Descriptor1;
 	Mat Descriptor2;
 	Mat img_matches;
-	uchar xValue;
-	USHORT depthvalue;
-	float xMitte = 0;
-	float yMitte = 0;
-	int xCheck = 100;
-	int yCheck = 100;
 
+	USHORT depthValueObj1;
+	USHORT depthValueObj2;
+	USHORT depthValueObj3;
+
+	float xMitteObj1 = 0;
+	float yMitteObj1 = 0;
+	float xMitteObj2 = 0;
+	float yMitteObj2 = 0;
+	float xMitteObj3 = 0;
+	float yMitteObj3 = 0;
+	int xCheckObj1 = 100;
+	int yCheckObj1 = 100;
+	int xCheckObj2 = 100;
+	int yCheckObj2 = 100;
+	int xCheckObj3 = 100;
+	int yCheckObj3 = 100;
 	
+
+
 	Mat matMATCHES = Mat::zeros(480, 640, CV_8UC1);
 	int i = 0;
 	float height = 0;
+	float gamma = 0;
 
-	/*xMitte == 0 && yMitte == 0*/
+	matIMG1 = imread("END_Logo.jpg", cv::IMREAD_GRAYSCALE);
+	matIMG2 = imread("GO.jpg", cv::IMREAD_GRAYSCALE);
+	matIMG3 = imread("GO.jpg", cv::IMREAD_GRAYSCALE);
 
-	/*xCheck > 20 || yCheck > 20*/
-
-	while (xCheck > 20 || yCheck > 20) {
-
-		sensor.updateTextureRGB();
-		textureRGB = sensor.getTextureRGB();
-		lockedRectRGB = sensor.getLockedRectRGB();
-		textureRGB->LockRect(0, &lockedRectRGB, NULL, 0);
-
-		sensor.updateTextureDEPTH();
-		textureDEPTH= sensor.getTextureDEPTH();
-		lockedRectDEPTH = sensor.getLockedRectDEPTH();
-		textureDEPTH->LockRect(0, &lockedRectDEPTH, NULL, 0);
-
-		convertNuiToMatRGB(lockedRectRGB, matRGB);
-		convertNuiToMatDEPTH(lockedRectDEPTH, matDEPTH);
-		
-
-		matIMG2 = imread("GO.jpg", IMREAD_GRAYSCALE);
-		process.processImage(matRGB, matHELP, matIMG2, matMATCHES, Descriptor1, Descriptor2, img_matches, &height, &xMitte, &yMitte, matHelp2, matDEPTH, &xCheck, &yCheck);
-
-		getDepthValue(lockedRectDEPTH, &xMitte, &yMitte, &depthvalue);
-		
+	process.getDepthandSize(matRGB, matHELP, matIMG1, matMATCHES, Descriptor1, Descriptor2, img_matches, &height, &xMitteObj1, &yMitteObj1, matHelp2, matDEPTH, &xCheckObj1, &yCheckObj1, lockedRectDEPTH, lockedRectRGB, &depthValueObj1, textureRGB, textureDEPTH, sensor, process, &gamma);
 
 	
-		if (waitKey(25) == 'q') {
-			break;
 
-
-		}
-		textureRGB->UnlockRect(0);
-		sensor.releaseFrameRGB();
-		textureDEPTH->UnlockRect(0);
-		sensor.releaseFrameDEPTH();
-		/*cout << xMitte, yMitte;
-		
-		cout << xValue;*/
-	}
 
 	cout << "Hello Wolrd";
 
 		
-//		while (true) {
-//
-//		sensor.updateTextureRGB();
-//		textureRGB = sensor.getTextureRGB();
-//		lockedRectRGB = sensor.getLockedRectRGB();
-//		textureRGB->LockRect(0, &lockedRectRGB, NULL, 0);
-//		sensor.updateTextureDEPTH();
-//		textureDEPTH= sensor.getTextureDEPTH();
-//		lockedRectDEPTH = sensor.getLockedRectDEPTH();
-//		textureDEPTH->LockRect(0, &lockedRectDEPTH, NULL, 0);
-//		
-//		
-//		convertNuiToMatRGB(lockedRectRGB, matRGB);
-//		
-//
-//		matIMG1 = imread("StartGroﬂ_1280x920.jpg", IMREAD_GRAYSCALE);
-//		matIMG2 = imread("GO.jpg", IMREAD_GRAYSCALE);
-//
-//		if (matIMG2.empty())                      
-//		{
-//			cout << "Could not open or find the image" << std::endl;
-//			return -1;
-//		}
-//
-//
-//		
-//		convertNuiToMatDEPTH(lockedRectDEPTH, matDEPTH);
-//		
-//		//process.SiftAlgorithm(matIMG1, matIMG2);
-//				
-//		/*process.SurfAlgorithm(matIMG1, matIMG2);
-//*/
-//		process.processImage(matRGB, matHELP, matIMG2, matMATCHES, Descriptor1, Descriptor2, img_matches, height, xMitte, yMitte, matHelp2);
-//
-//		
-//
-//		
-//
-//			/*imshow("RGB", matRGB);
-//			cvMoveWindow("RGB", 1500, 0);*/
-//
-//	/*		if (waitKey(25) == 'f') {
-//				break;
-//			}
-//		}*/
-//		/*imshow("depth", matDEPTH);*/
-//		//cvmovewindow("depth", 2150, 0);
-//		textureRGB->UnlockRect(0);
-//		sensor.releaseFrameRGB(); 
-//
-//		textureDEPTH->UnlockRect(0);
-//		sensor.releaseFrameDEPTH();
-//
-//		if (waitKey(25) == 'q') {
-//			break;
-//		}
-//	}
-//
+
 	return 0;
 }
