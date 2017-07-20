@@ -25,7 +25,7 @@ Process::Process() {
 Process::~Process() { 
 };
 
-void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat& mat3, cv::Mat& Descriptor1, cv::Mat& Descriptor2, cv::Mat& img_matches, float* height, float* xMitte, float* yMitte, cv::Mat& matHelp2, cv::Mat4b& matDEPTH, int* xCheck, int* yCheck, float* gamma) {
+void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat& mat3, cv::Mat& img_matches, float* height, float* xMitte, float* yMitte, cv::Mat& matHelp2, cv::Mat4b& matDEPTH, int* xCheck, int* yCheck, float* gamma, float* a, float* b) {
 
 
 	cv::cvtColor(mat,mat1, CV_RGB2GRAY);
@@ -69,6 +69,8 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	std::vector< cv::KeyPoint > keypoints2;
 
 	 
+	cv::Mat Descriptor1;
+	cv::Mat Descriptor2;
 
 	
 	 
@@ -159,7 +161,7 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 
 	 line(img_matches, cv::Point2f(*xMitte, *yMitte), cv :: Point2f(*xMitte + 2, *yMitte + 2), cv::Scalar(255, 0, 0), 4);
 
-
+	
 
 	 int scene_corners1x = static_cast<int>(scene_corners[0].x);
 	 int scene_corners2x = static_cast<int>(scene_corners[1].x);
@@ -173,22 +175,27 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	 *xCheck = scene_corners2x - scene_corners1x - scene_corners3x + scene_corners4x;
 	 *yCheck = scene_corners4y - scene_corners1y - scene_corners3y + scene_corners2y;
 	 
-	 float a = scene_corners2x - scene_corners1x;
-	 float b = scene_corners4y - scene_corners1y;
+	 *a = scene_corners2x - scene_corners1x;
+	 *b = scene_corners4y - scene_corners1y;
 	 float cQuadrat = (scene_corners2x - scene_corners4x)*(scene_corners2x - scene_corners4x) + (scene_corners4y - scene_corners2y)*(scene_corners4y - scene_corners2y);
 
-	 float ergb = (a * a + b * b - cQuadrat) / (2 * a * b);
+	 float ergb = (*a * *a + *b * *b - cQuadrat) / (2 * *a * *b);
+	 
+	 
 	 *gamma = std::acos(ergb);
 
 	 float Pi = 3.14159265359;
 
 	 *gamma = (*gamma / (2 * Pi)) * 360;
 
+	/* if (a < 30 || b < 30 ) return;*/
+
 	 //-- Show detected matches
+	 
+
 	 imshow("Good Matches & Object detection", img_matches);
-
+	 cv::moveWindow("Good Matches & Object detection", 1800, 0);
 	
-
 };
 	
 
@@ -424,10 +431,11 @@ void Process::SurfAlgorithm(cv::Mat& mat1, cv::Mat& mat2) {
 
 
 
-void Process::getDepthandSize(cv::Mat3b& matRGB, cv::Mat& matHELP, cv::Mat& matIMG2, cv::Mat& matMATCHES, cv::Mat& Descriptor1, cv::Mat& Descriptor2, cv::Mat& img_matches, float* height, float* xMitte, float* yMitte, cv::Mat& matHelp2, cv::Mat4b& matDEPTH, int* xCheck, int* yCheck, NUI_LOCKED_RECT& lockedRectDEPTH, NUI_LOCKED_RECT& lockedRectRGB, USHORT* depthValue, INuiFrameTexture* textureRGB, INuiFrameTexture* textureDEPTH, Sensor& sensor, Process& process, float* gamma) {
-	
-	while (*xCheck > 20 || *yCheck > 20 || *xCheck < -20 || *yCheck < -20 || *gamma >100 || *gamma <80) {
-
+void Process::getDepthandSize(cv::Mat3b& matRGB, cv::Mat& matHELP, cv::Mat& matIMG2, cv::Mat& matMATCHES, cv::Mat& img_matches, float* height, float* xMitte, float* yMitte, cv::Mat& matHelp2, cv::Mat4b& matDEPTH, int* xCheck, int* yCheck, NUI_LOCKED_RECT& lockedRectDEPTH, NUI_LOCKED_RECT& lockedRectRGB, USHORT* depthValue, INuiFrameTexture* textureRGB, INuiFrameTexture* textureDEPTH, Sensor& sensor, Process& process, float* gamma) {
+	float a = 0;
+	float b = 0;
+	while (*xCheck > 20 || *yCheck > 20 || *xCheck < -20 || *yCheck < -20 || *gamma >100 || *gamma <80 || a < 30 || b < 30 || *depthValue < 800) {
+		
 		sensor.updateTextureRGB();
 		textureRGB = sensor.getTextureRGB();
 		lockedRectRGB = sensor.getLockedRectRGB();
@@ -440,10 +448,24 @@ void Process::getDepthandSize(cv::Mat3b& matRGB, cv::Mat& matHELP, cv::Mat& matI
 
 		convertNuiToMatRGB(lockedRectRGB, matRGB);
 		convertNuiToMatDEPTH(lockedRectDEPTH, matDEPTH);
-
+	
 
 		
-		process.processImage(matRGB, matHELP, matIMG2, matMATCHES, Descriptor1, Descriptor2, img_matches, height, xMitte, yMitte, matHelp2, matDEPTH, xCheck, yCheck, gamma);
+		process.processImage(matRGB, matHELP, matIMG2, matMATCHES, img_matches, height, xMitte, yMitte, matHelp2, matDEPTH, xCheck, yCheck, gamma, &a, &b);
+
+		float c = 100;
+		float d = 640;
+		
+		/*line(matDEPTH, cv::Point2f(d-(*xMitte + c), *yMitte + c), cv::Point2f(d-*xMitte - c, *yMitte + c), cv::Scalar(255, 0, 0), 4);
+		cv::imshow("Depth", matDEPTH);
+		cv::moveWindow("Depth", 1500, 400);
+		line(matRGB, cv::Point2f(*xMitte + c, *yMitte + c), cv::Point2f(*xMitte + c, *yMitte + c), cv::Scalar(255, 0, 0), 4);
+		cv::imshow("RGB", matRGB);
+		cv::moveWindow("RGB", 700, 300);*/
+
+		
+
+		convertNuiToMatDEPTH(lockedRectDEPTH, matDEPTH);
 
 		getDepthValue(lockedRectDEPTH, xMitte, yMitte, depthValue);
 		if (cv::waitKey(25) == 'q') {
@@ -452,9 +474,8 @@ void Process::getDepthandSize(cv::Mat3b& matRGB, cv::Mat& matHELP, cv::Mat& matI
 			
 
 		}
-		line(matDEPTH, cv::Point2f(*xMitte , *yMitte), cv::Point2f(*xMitte, *yMitte), cv::Scalar(255, 0, 0), 4);
-		cv::imshow("Depth", matDEPTH);
-	
+
+		
 
 		
 
@@ -465,3 +486,87 @@ void Process::getDepthandSize(cv::Mat3b& matRGB, cv::Mat& matHELP, cv::Mat& matI
 	}
 
 	};
+
+void Process::get2DMap(cv::Mat3b& mat2DMap, USHORT* depthValueObj1, USHORT* depthValueObj2, USHORT* depthValueObj3, float* xMitteObj1, float* xMitteObj2, float* xMitteObj3) {
+
+	
+	
+
+	for (int i = 0; i <960 ; i++)	
+	{
+		
+		cv::Vec3b *pointerToRow = mat2DMap.ptr<cv::Vec3b>(i);
+
+		for (int j = 0; j < 1280; j++)
+		{
+			//print Kinect
+			if (i > 930 && j > 554 && j < 725) {
+				unsigned char r = 255;
+				unsigned char g = 69;
+				unsigned char b = 0;
+
+				pointerToRow[j] = cv::Vec3b(r, g, b);
+			}
+
+			//print firts Object 
+
+
+
+			else if (i < (960 - (5 + static_cast<int>(*depthValueObj1 * 60 / 100))) && i > ( 960 - (5 + static_cast<int>(*depthValueObj1 * 60 / 100) + 48)) && j < (static_cast<int>((*xMitteObj1 + 100) * 2 + 9 * 6.1)) && j >(static_cast<int>((*xMitteObj1 + 100) * 2 - 9 * 6.1))) {
+
+				unsigned char r = 0;
+				unsigned char g = 0;
+				unsigned char b = 205;
+
+				pointerToRow[j] = cv::Vec3b(r, g, b);
+
+
+			}
+
+			//print second Object 
+
+
+
+			else if (i < ( 960 - (5 + static_cast<int>(*depthValueObj2 * 60 / 100))) && i > (960 - (5 + static_cast<int>(*depthValueObj2 * 60 / 100) + 48)) && j < (static_cast<int>((*xMitteObj2 + 100) * 2 + 9 * 6.1)) && j >(static_cast<int>((*xMitteObj2 + 100) * 2 - 9 * 6.1))) {
+
+				unsigned char r = 0;
+				unsigned char g = 205;
+				unsigned char b = 0;
+
+				pointerToRow[j] = cv::Vec3b(r, g, b);
+
+
+			}
+		
+			//print third Object 
+
+
+
+			else if (i < ( 960 - (5 + static_cast<int>(*depthValueObj3 * 60 / 100))) && i > ( 960 - (5 + static_cast<int>(*depthValueObj3 * 60 / 100) + 48)) && j < (static_cast<int>((*xMitteObj3 + 100) * 2 + 4 * 6.1)) && j >(static_cast<int>((*xMitteObj3 + 100) * 2 - 4 * 6.1))) {
+
+				unsigned char r = 0;
+				unsigned char g = 0;
+				unsigned char b = 0;
+
+				pointerToRow[j] = cv::Vec3b(r, g, b);
+
+
+			}
+
+			else {
+				unsigned char r = 255;
+				unsigned char g = 255;
+				unsigned char b = 255;
+
+				pointerToRow[j] = cv::Vec3b(r, g, b);
+			}
+
+
+		}
+
+	}
+	
+	return;
+	
+};
+
