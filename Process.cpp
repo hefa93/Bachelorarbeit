@@ -212,123 +212,99 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 
 void Process::SiftAlgorithm (cv::Mat& img_1, cv::Mat& img_2){
 
-	//cv::Ptr<cv::Feature2D> f2d = cv::xfeatures2d::SIFT::create();
 
-	//
-	//std::vector<cv::KeyPoint> keypoints_1, keypoints_2;
-	//f2d->detect(img_1, keypoints_1);
-	//f2d->detect(img_2, keypoints_2);
-
- //
-	//cv::Mat descriptors_1, descriptors_2;
-	//f2d->compute(img_1, keypoints_1, descriptors_1);
-	//f2d->compute(img_2, keypoints_2, descriptors_2);
-
-	//cv::Mat out0;
-	//drawKeypoints(img_1, keypoints_1, out0);
-	////imshow("KeyPoint0.jpg", out0);
-
-
-	//cv::BFMatcher matcher;
-	//std::vector< cv::DMatch > matches;
-	//matcher.match(descriptors_1, descriptors_2, matches);
-
-
-	//cv::Mat img_matches = cv::Mat::zeros(img_1.size(), CV_8UC3);
-	//drawMatches(img_1, keypoints_1, img_2, keypoints_2, matches, img_matches);
-	//imshow("matches", img_matches);
 
 	cv::Ptr<cv::Feature2D> f2d = cv::xfeatures2d::SIFT::create();
 
 
 	std::vector<cv::KeyPoint> keypoints_1, keypoints_2;
-	f2d->detect(img_1, keypoints_1);
+	//f2d->detect(img_1, keypoints_1);
 	f2d->detect(img_2, keypoints_2);
 
 
 	cv::Mat descriptors_1, descriptors_2;
-	f2d->compute(img_1, keypoints_1, descriptors_1);
+	//f2d->compute(img_1, keypoints_1, descriptors_1);
 	f2d->compute(img_2, keypoints_2, descriptors_2);
 
 	cv::Mat out0;
 	drawKeypoints(img_1, keypoints_1, out0);
-	//imshow("KeyPoint0.jpg", out0);
+	imshow("KeyPoint0.jpg", out0);
 
 
 	/*cv::FlannBasedMatcher matcher;
 	std::vector< cv::DMatch > matches;
 	matcher.match(descriptors_1, descriptors_2, matches);*/
 
-	cv::BFMatcher matcher;
-	std::vector< cv::DMatch > matches;
-	matcher.match(descriptors_1, descriptors_2, matches);
+	//cv::BFMatcher matcher;
+	//std::vector< cv::DMatch > matches;
+	//matcher.match(descriptors_1, descriptors_2, matches);
 
 
-	double max_dist = 0;
-	double min_dist = 100;
+	//double max_dist = 0;
+	//double min_dist = 100;
 
-	for (int i = 0; i < descriptors_1.rows; i++)
-	{
-		double dist = matches[i].distance;
-		if (dist < min_dist) min_dist = dist;
-		if (dist > max_dist) max_dist = dist;
-	}
+	//for (int i = 0; i < descriptors_1.rows; i++)
+	//{
+	//	double dist = matches[i].distance;
+	//	if (dist < min_dist) min_dist = dist;
+	//	if (dist > max_dist) max_dist = dist;
+	//}
 
-	std::vector< cv::DMatch > good_matches;
+	//std::vector< cv::DMatch > good_matches;
 
-	for (int i = 0; i < descriptors_1.rows; i++)
-	{
-		if (matches[i].distance <= max(2 * min_dist, 0.02))
-		{
-			good_matches.push_back(matches[i]);
-		}
-	}
+	//for (int i = 0; i < descriptors_1.rows; i++)
+	//{
+	//	if (matches[i].distance <= max(2 * min_dist, 0.02))
+	//	{
+	//		good_matches.push_back(matches[i]);
+	//	}
+	//}
 
-	cv::Mat img_matches;
-	drawMatches(img_1, keypoints_1, img_2, keypoints_2,
-		good_matches, img_matches, 0, 0,
-		std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+	//cv::Mat img_matches;
+	//drawMatches(img_1, keypoints_1, img_2, keypoints_2,
+	//	good_matches, img_matches, 0, 0,
+	//	std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
-	//-- Localize the object
-	std::vector<cv::Point2f> obj;
-	std::vector<cv::Point2f> scene;
+	////-- Localize the object
+	//std::vector<cv::Point2f> obj;
+	//std::vector<cv::Point2f> scene;
 
-	for (int i = 0; i < good_matches.size(); i++)
-	{
-		//-- Get the keypoints from the good 
+	//for (int i = 0; i < good_matches.size(); i++)
+	//{
+	//	//-- Get the keypoints from the good 
 
-		obj.push_back(keypoints_1[good_matches[i].queryIdx].pt);
-		scene.push_back(keypoints_2[good_matches[i].trainIdx].pt);
-	}
+	//	obj.push_back(keypoints_1[good_matches[i].queryIdx].pt);
+	//	scene.push_back(keypoints_2[good_matches[i].trainIdx].pt);
+	//}
 
-	cv::Mat H = findHomography(scene, obj, CV_RANSAC);
-
-
-	//-- Get the corners from the image_1 ( the object to be "detected" )
-	std::vector<cv::Point2f> obj_corners(4);
-	obj_corners[0] = cvPoint(0, 0); obj_corners[1] = cvPoint(img_1.cols, 0);
-	obj_corners[2] = cvPoint(img_1.cols, img_1.rows); obj_corners[3] = cvPoint(0, img_1.rows);
-	std::vector<cv::Point2f> scene_corners(4);
-
-	if (H.rows == 3 || H.cols == 3) {
-		perspectiveTransform(obj_corners, scene_corners, H);
-
-		std::cout << "Dimension von H korrekt";
-	}
+	//cv::Mat H = findHomography(scene, obj, CV_RANSAC);
 
 
-	//-- Draw lines between the corners (the mapped object in the scene - image_2 )
-	line(img_matches, scene_corners[0], scene_corners[1], cv::Scalar(0, 255, 0), 4);
-	line(img_matches, scene_corners[1], scene_corners[2], cv::Scalar(0, 255, 0), 4);
-	line(img_matches, scene_corners[2], scene_corners[3], cv::Scalar(0, 255, 0), 4);
-	line(img_matches, scene_corners[3], scene_corners[0], cv::Scalar(0, 255, 0), 4);
+	////-- Get the corners from the image_1 ( the object to be "detected" )
+	//std::vector<cv::Point2f> obj_corners(4);
+	//obj_corners[0] = cvPoint(0, 0); obj_corners[1] = cvPoint(img_1.cols, 0);
+	//obj_corners[2] = cvPoint(img_1.cols, img_1.rows); obj_corners[3] = cvPoint(0, img_1.rows);
+	//std::vector<cv::Point2f> scene_corners(4);
+
+	//if (H.rows == 3 || H.cols == 3) {
+	//	perspectiveTransform(obj_corners, scene_corners, H);
+
+	//	std::cout << "Dimension von H korrekt";
+	//}
 
 
+	////-- Draw lines between the corners (the mapped object in the scene - image_2 )
+	//line(img_matches, scene_corners[0], scene_corners[1], cv::Scalar(0, 255, 0), 4);
+	//line(img_matches, scene_corners[1], scene_corners[2], cv::Scalar(0, 255, 0), 4);
+	//line(img_matches, scene_corners[2], scene_corners[3], cv::Scalar(0, 255, 0), 4);
+	//line(img_matches, scene_corners[3], scene_corners[0], cv::Scalar(0, 255, 0), 4);
 
 
 
-	//-- Show detected matches
-	imshow("Good Matches & Object detection", img_matches);
+
+
+	////-- Show detected matches
+	//imshow("Good Matches & Object detection", img_matches);
 	
 };
 
@@ -350,12 +326,19 @@ void Process::SurfAlgorithm(cv::Mat& mat1, cv::Mat& mat2) {
 
 	cv::Ptr<SURF> detector = SURF::create(400);
 
+	detector->detect(mat2, keypoints2);
 
+	detector->compute(mat2, keypoints2, Descriptor2);
 
+	detector->detect(mat1, keypoints1);
 
-	detector->detectAndCompute(mat2, cv::Mat(), keypoints2, Descriptor2);
+	detector->compute(mat1, keypoints1, Descriptor1);
+	//detector->detectAndCompute(mat2, cv::Mat(), keypoints2, Descriptor2);
 
-	detector->detectAndCompute(mat1, cv::Mat(), keypoints1, Descriptor1);
+	//detector->detectAndCompute(mat1, cv::Mat(), keypoints1, Descriptor1);
+	cv::Mat out0;
+	drawKeypoints(mat1, keypoints1, out0);
+	//imshow("KeyPoint0.jpg", out0);
 
 	cv::FlannBasedMatcher matcher;
 	std::vector< cv::DMatch > matches;
@@ -492,15 +475,15 @@ void Process::get2DMap(cv::Mat3b& mat2DMap, USHORT* depthValueObj1, USHORT* dept
 	
 	
 
-	for (int i = 0; i <960 ; i++)	
+	for (int i = 0; i < 480 ; i++)	
 	{
 		
 		cv::Vec3b *pointerToRow = mat2DMap.ptr<cv::Vec3b>(i);
 
-		for (int j = 0; j < 1280; j++)
+		for (int j = 0; j < 640; j++)
 		{
 			//print Kinect
-			if (i > 930 && j > 554 && j < 725) {
+			if (i > 465 && j > 277 && j < 363) {
 				unsigned char r = 255;
 				unsigned char g = 69;
 				unsigned char b = 0;
@@ -512,7 +495,7 @@ void Process::get2DMap(cv::Mat3b& mat2DMap, USHORT* depthValueObj1, USHORT* dept
 
 
 
-			else if (i < (960 - (5 + static_cast<int>(*depthValueObj1 * 60 / 100))) && i > ( 960 - (5 + static_cast<int>(*depthValueObj1 * 60 / 100) + 48)) && j < (static_cast<int>((*xMitteObj1 + 100) * 2 + 9 * 6.1)) && j >(static_cast<int>((*xMitteObj1 + 100) * 2 - 9 * 6.1))) {
+			else if (i < (480 - (15 + static_cast<int>(*depthValueObj1 * 30 / 100))) && i > ( 480 - (15 + static_cast<int>(*depthValueObj1 * 30 / 100) + 24)) && j < (static_cast<int>((*xMitteObj1 + 100) + 9 * 3)) && j >(static_cast<int>((*xMitteObj1 + 100) - 9 * 3))) {
 
 				unsigned char r = 0;
 				unsigned char g = 0;
@@ -527,7 +510,7 @@ void Process::get2DMap(cv::Mat3b& mat2DMap, USHORT* depthValueObj1, USHORT* dept
 
 
 
-			else if (i < ( 960 - (5 + static_cast<int>(*depthValueObj2 * 60 / 100))) && i > (960 - (5 + static_cast<int>(*depthValueObj2 * 60 / 100) + 48)) && j < (static_cast<int>((*xMitteObj2 + 100) * 2 + 9 * 6.1)) && j >(static_cast<int>((*xMitteObj2 + 100) * 2 - 9 * 6.1))) {
+			else if (i < (480 - (15 + static_cast<int>(*depthValueObj2 * 30 / 100))) && i >(480 - (15 + static_cast<int>(*depthValueObj2 * 30 / 100) + 24)) && j < (static_cast<int>((*xMitteObj2 + 100) + 9 * 3)) && j >(static_cast<int>((*xMitteObj2 + 100) - 9 * 3))) {
 
 				unsigned char r = 0;
 				unsigned char g = 205;
@@ -542,7 +525,7 @@ void Process::get2DMap(cv::Mat3b& mat2DMap, USHORT* depthValueObj1, USHORT* dept
 
 
 
-			else if (i < ( 960 - (5 + static_cast<int>(*depthValueObj3 * 60 / 100))) && i > ( 960 - (5 + static_cast<int>(*depthValueObj3 * 60 / 100) + 48)) && j < (static_cast<int>((*xMitteObj3 + 100) * 2 + 4 * 6.1)) && j >(static_cast<int>((*xMitteObj3 + 100) * 2 - 4 * 6.1))) {
+			else if (i < ( 480 - (15 + static_cast<int>(*depthValueObj3 * 30 / 100))) && i > ( 480 - (15 + static_cast<int>(*depthValueObj3 * 30 / 100) + 77)) && j < (static_cast<int>((*xMitteObj3 + 100) + 4 * 3)) && j > (static_cast<int>((*xMitteObj3 + 100) - 4 * 3))) {
 
 				unsigned char r = 0;
 				unsigned char g = 0;
