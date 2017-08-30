@@ -79,29 +79,29 @@ int main() {
 	float gamma2 = 0;
 	float gamma3 = 0;
 
-	matIMG1 = imread("SK_100.jpg", cv::IMREAD_GRAYSCALE);
-	matIMG2 = imread("SG_10.jpg", cv::IMREAD_GRAYSCALE);
-	while (TRUE) {
-		process.SurfAlgorithm(matIMG1, matIMG2);
-		if (cv::waitKey(25) == 'q') {
-			break;
+	//matIMG1 = imread("SK_30.jpg", cv::IMREAD_GRAYSCALE);
+	//matIMG2 = imread("SG_30.jpg", cv::IMREAD_GRAYSCALE);
+	//while (TRUE) {
+	//	process.SurfAlgorithm(matIMG1, matIMG2);
+	//	if (cv::waitKey(25) == 'q') {
+	//		break;
 
-			
+	//		
 
-		}
-	}
+	//	}
+	//}
 
-	//matIMG1 = imread("END_Logo.jpg", cv::IMREAD_GRAYSCALE);
-	//matIMG2 = imread("GO_Logo.jpg", cv::IMREAD_GRAYSCALE);
-	//matIMG3 = imread("OBSTACLE_Logo.jpg", cv::IMREAD_GRAYSCALE);
+	/*matIMG1 = imread("END_Logo.jpg", cv::IMREAD_GRAYSCALE);
+	matIMG2 = imread("GO_Logo.jpg", cv::IMREAD_GRAYSCALE);
+	matIMG3 = imread("OBSTACLE_Logo.jpg", cv::IMREAD_GRAYSCALE);
 
-	//process.getDepthandSize(matRGB, matHELP, matIMG1, matMATCHES, img_matches, &height1, &xMitteObj1, &yMitteObj1, matHelp2, matDEPTH, &xCheckObj1, &yCheckObj1, lockedRectDEPTH, lockedRectRGB, &depthValueObj1, textureRGB, textureDEPTH, sensor, process, &gamma1);
+	process.getDepthandSize(matRGB, matHELP, matIMG1, matMATCHES, img_matches, &height1, &xMitteObj1, &yMitteObj1, matHelp2, matDEPTH, &xCheckObj1, &yCheckObj1, lockedRectDEPTH, lockedRectRGB, &depthValueObj1, textureRGB, textureDEPTH, sensor, process, &gamma1);
 
-	//process.getDepthandSize(matRGB, matHELP, matIMG2, matMATCHES, img_matches, &height2, &xMitteObj2, &yMitteObj2, matHelp2, matDEPTH, &xCheckObj2, &yCheckObj2, lockedRectDEPTH, lockedRectRGB, &depthValueObj2, textureRGB, textureDEPTH, sensor, process, &gamma2);
+	process.getDepthandSize(matRGB, matHELP, matIMG2, matMATCHES, img_matches, &height2, &xMitteObj2, &yMitteObj2, matHelp2, matDEPTH, &xCheckObj2, &yCheckObj2, lockedRectDEPTH, lockedRectRGB, &depthValueObj2, textureRGB, textureDEPTH, sensor, process, &gamma2);
 
-	//process.getDepthandSize(matRGB, matHELP, matIMG3, matMATCHES, img_matches, &height3, &xMitteObj3, &yMitteObj3, matHelp2, matDEPTH, &xCheckObj3, &yCheckObj3, lockedRectDEPTH, lockedRectRGB, &depthValueObj3, textureRGB, textureDEPTH, sensor, process, &gamma3);
-	//
-	/*depthValueObj1 = 900;
+	process.getDepthandSize(matRGB, matHELP, matIMG3, matMATCHES, img_matches, &height3, &xMitteObj3, &yMitteObj3, matHelp2, matDEPTH, &xCheckObj3, &yCheckObj3, lockedRectDEPTH, lockedRectRGB, &depthValueObj3, textureRGB, textureDEPTH, sensor, process, &gamma3);
+	*/
+	depthValueObj1 = 900;
 	depthValueObj2 = 900;
 	depthValueObj3 = 900;
 	xMitteObj1 = 305;
@@ -121,17 +121,17 @@ int main() {
 	int startyobstacle = (480 - (15 + static_cast<int>(depthValueObj3 * 30 / 100) + 77)) / 2;
 	int endyobstacle = (480 - (15 + static_cast<int>(depthValueObj3 * 30 / 100))) / 2;
 
-	startx = 99 ;
-	starty = 93;
-	endx = 200;
-	endy = 89;
-	endxobstacle = 158;
-	startxobstacle = 146;
-	startyobstacle = 62;
-	endyobstacle = 100;
+	//startx = 99 ;
+	//starty = 93;
+	//endx = 200;
+	//endy = 89;
+	//endxobstacle = 158;
+	//startxobstacle = 146;
+	//startyobstacle = 62;
+	//endyobstacle = 100;
 
-	nodes.initNode(&startx, &starty, &endx, &endy, &startxobstacle, &startyobstacle, &endxobstacle, &endyobstacle, mat2DMap);
-	nodes.findpath(&startx, &starty, &endx, &endy, mat2DMap);
+	nodes.initNode2D(&startx, &starty, &endx, &endy, &startxobstacle, &startyobstacle, &endxobstacle, &endyobstacle, mat2DMap);
+	nodes.findpath2D(&startx, &starty, &endx, &endy, mat2DMap);
 
 	
 
@@ -144,7 +144,7 @@ int main() {
 
 
 		}
-	}*/
+	}
 	cout << "Hello World";
 
 	return 0;

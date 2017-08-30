@@ -121,11 +121,11 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	 {
 		 //-- Get the keypoints from the good 
 
-		 obj.push_back(keypoints1[good_matches[i].queryIdx].pt);
-		 scene.push_back(keypoints2[good_matches[i].trainIdx].pt);
+		 scene.push_back(keypoints1[good_matches[i].queryIdx].pt);
+		 obj.push_back(keypoints2[good_matches[i].trainIdx].pt);
 	 }
 
-	 cv::Mat H  = findHomography(scene, obj, CV_RANSAC);
+	 cv::Mat H  = findHomography(obj, scene, CV_RANSAC);
 
 	
 	 //-- Get the corners from the image_1 ( the object to be "detected" )
@@ -194,7 +194,7 @@ void Process::processImage(cv::Mat3b& mat, cv::Mat& mat1, cv::Mat& mat2, cv::Mat
 	 
 
 	 imshow("Good Matches & Object detection", img_matches);
-	 cv::moveWindow("Good Matches & Object detection", 1800, 0);
+	 cv::moveWindow("Good Matches & Object detection", 300, 100);
 	
 };
 	
@@ -333,9 +333,9 @@ void Process::SurfAlgorithm(cv::Mat& mat1, cv::Mat& mat2) {
 	detector->detect(mat1, keypoints1);
 
 	detector->compute(mat1, keypoints1, Descriptor1);
-	//detector->detectAndCompute(mat2, cv::Mat(), keypoints2, Descriptor2);
+	detector->detectAndCompute(mat2, cv::Mat(), keypoints2, Descriptor2);
 
-	//detector->detectAndCompute(mat1, cv::Mat(), keypoints1, Descriptor1);
+	detector->detectAndCompute(mat1, cv::Mat(), keypoints1, Descriptor1);
 	cv::Mat out0;
 	drawKeypoints(mat1, keypoints1, out0);
 	//imshow("KeyPoint0.jpg", out0);
@@ -378,11 +378,11 @@ void Process::SurfAlgorithm(cv::Mat& mat1, cv::Mat& mat2) {
 	{
 		//-- Get the keypoints from the good 
 
-		obj.push_back(keypoints1[good_matches[i].queryIdx].pt);
-		scene.push_back(keypoints2[good_matches[i].trainIdx].pt);
+		scene.push_back(keypoints1[good_matches[i].queryIdx].pt);
+		obj.push_back(keypoints2[good_matches[i].trainIdx].pt);
 	}
 
-	cv::Mat H = findHomography(scene, obj, CV_RANSAC);
+	cv::Mat H = findHomography(obj, scene, CV_RANSAC);
 
 
 	//-- Get the corners from the image_1 ( the object to be "detected" )
@@ -408,6 +408,7 @@ void Process::SurfAlgorithm(cv::Mat& mat1, cv::Mat& mat2) {
 
 	//-- Show detected matches
 	imshow("Good Matches & Object detection", img_matches);
+	cv::moveWindow("Good Matches & Object detection", 300, 100);
 
 };
 
